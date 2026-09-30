@@ -1,0 +1,8 @@
+{
+  "name": "PHC MedGrid",
+  "description": "Real-time healthcare resource optimization dashboard for a Primary Health Centre logistics network.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

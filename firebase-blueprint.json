@@ -1,0 +1,253 @@
+{
+  "entities": {
+    "inventoryItem": {
+      "title": "Inventory Item",
+      "description": "Healthcare resource item tracked within a hospital inventory",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the inventory item",
+          "maxLength": 128
+        },
+        "hospital_id": {
+          "type": "string",
+          "description": "Hospital or PHC facility identifier",
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the medical supply or bed",
+          "maxLength": 120
+        },
+        "category": {
+          "type": "string",
+          "description": "Category classification of the resource",
+          "maxLength": 80
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit of measurement",
+          "maxLength": 30
+        },
+        "current_quantity": {
+          "type": "number",
+          "description": "Current quantity in stock"
+        },
+        "full_capacity": {
+          "type": "number",
+          "description": "Maximum capacity or baseline threshold"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Creation timestamp in ISO or server format",
+          "maxLength": 60
+        },
+        "updated_at": {
+          "type": "string",
+          "description": "Last update timestamp",
+          "maxLength": 60
+        }
+      },
+      "required": [
+        "hospital_id",
+        "name",
+        "category",
+        "unit",
+        "current_quantity",
+        "full_capacity"
+      ]
+    },
+    "order": {
+      "title": "Logistics Order",
+      "description": "Consignment delivery or procurement order between vendor and PHC",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique order identifier",
+          "maxLength": 128
+        },
+        "hospital_id": {
+          "type": "string",
+          "description": "Target hospital ID",
+          "maxLength": 128
+        },
+        "vendor_name": {
+          "type": "string",
+          "description": "Name of the supplier or logistics partner",
+          "maxLength": 120
+        },
+        "package_name": {
+          "type": "string",
+          "description": "Consignment package description",
+          "maxLength": 160
+        },
+        "location": {
+          "type": "string",
+          "description": "Storage or dock delivery location",
+          "maxLength": 120
+        },
+        "validity_date": {
+          "type": "string",
+          "description": "Expiry or delivery validity date",
+          "maxLength": 40
+        },
+        "vendor_assured": {
+          "type": "boolean",
+          "description": "Quality assurance and verification status"
+        },
+        "item_received": {
+          "type": "boolean",
+          "description": "Acknowledgement of receipt by facility staff"
+        },
+        "document_name": {
+          "type": "string",
+          "description": "Attached invoice or bill of lading document name",
+          "maxLength": 120
+        },
+        "status": {
+          "type": "string",
+          "description": "Delivery status",
+          "enum": ["pending", "in_transit", "delivered", "cancelled"],
+          "maxLength": 30
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Timestamp when order was lodged",
+          "maxLength": 60
+        }
+      },
+      "required": [
+        "hospital_id",
+        "vendor_name",
+        "package_name",
+        "vendor_assured",
+        "item_received",
+        "status"
+      ]
+    },
+    "transferRequest": {
+      "title": "Transfer Request",
+      "description": "Cross-network emergency resource transfer request between healthcare centers",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Request identifier",
+          "maxLength": 128
+        },
+        "requesting_hospital_id": {
+          "type": "string",
+          "description": "Hospital requesting urgent supplies",
+          "maxLength": 128
+        },
+        "donor_hospital_id": {
+          "type": "string",
+          "description": "Hospital supplying the surplus items",
+          "maxLength": 128
+        },
+        "inventory_item_id": {
+          "type": "string",
+          "description": "Associated inventory item ID",
+          "maxLength": 128
+        },
+        "resource_name": {
+          "type": "string",
+          "description": "Name of the requested resource",
+          "maxLength": 120
+        },
+        "quantity_requested": {
+          "type": "number",
+          "description": "Volume or quantity requested"
+        },
+        "status": {
+          "type": "string",
+          "description": "Workflow approval state",
+          "enum": ["pending", "authorized", "completed", "rejected"],
+          "maxLength": 30
+        },
+        "urgency": {
+          "type": "string",
+          "description": "Urgency classification level",
+          "enum": ["critical", "normal", "low"],
+          "maxLength": 20
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Timestamp of creation",
+          "maxLength": 60
+        }
+      },
+      "required": [
+        "requesting_hospital_id",
+        "resource_name",
+        "quantity_requested",
+        "status",
+        "urgency"
+      ]
+    },
+    "profile": {
+      "title": "User Profile",
+      "description": "Hospital or vendor personnel user profile",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "User or facility identifier",
+          "maxLength": 128
+        },
+        "role": {
+          "type": "string",
+          "description": "System role",
+          "enum": ["hospital", "vendor"],
+          "maxLength": 20
+        },
+        "org_name": {
+          "type": "string",
+          "description": "Organization or facility name",
+          "maxLength": 120
+        },
+        "contact_email": {
+          "type": "string",
+          "description": "Contact email address",
+          "maxLength": 120
+        },
+        "contact_phone": {
+          "type": "string",
+          "description": "Emergency telephone contact",
+          "maxLength": 40
+        },
+        "location": {
+          "type": "string",
+          "description": "Geographical location or sub-district address",
+          "maxLength": 160
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Creation timestamp",
+          "maxLength": 60
+        }
+      },
+      "required": ["role", "org_name"]
+    }
+  },
+  "firestore": {
+    "/inventory_items/{itemId}": {
+      "schema": "inventoryItem",
+      "description": "Hospital inventory levels and capacity tracking records"
+    },
+    "/orders/{orderId}": {
+      "schema": "order",
+      "description": "Supply chain orders and logistics dispatch logs"
+    },
+    "/transfer_requests/{requestId}": {
+      "schema": "transferRequest",
+      "description": "Emergency peer-to-peer resource transfers across the network"
+    },
+    "/profiles/{profileId}": {
+      "schema": "profile",
+      "description": "User profile records and facility details"
+    }
+  }
+}

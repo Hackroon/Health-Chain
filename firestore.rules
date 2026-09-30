@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidInventoryItem(data) {
+      return data.keys().hasAll(['hospital_id', 'name', 'category', 'unit', 'current_quantity', 'full_capacity']) &&
+        data.hospital_id is string && data.hospital_id.size() <= 128 &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 120 &&
+        data.category is string && data.category.size() <= 80 &&
+        data.unit is string && data.unit.size() <= 30 &&
+        data.current_quantity is number && data.current_quantity >= 0 &&
+        data.full_capacity is number && data.full_capacity > 0;
+    }
+
+    function isValidOrder(data) {
+      return data.keys().hasAll(['hospital_id', 'vendor_name', 'package_name', 'vendor_assured', 'item_received', 'status']) &&
+        data.hospital_id is string && data.hospital_id.size() <= 128 &&
+        data.vendor_name is string && data.vendor_name.size() <= 120 &&
+        data.package_name is string && data.package_name.size() <= 160 &&
+        data.vendor_assured is bool &&
+        data.item_received is bool &&
+        data.status in ['pending', 'in_transit', 'delivered', 'cancelled'];
+    }
+
+    function isValidTransferRequest(data) {
+      return data.keys().hasAll(['requesting_hospital_id', 'resource_name', 'quantity_requested', 'status', 'urgency']) &&
+        data.requesting_hospital_id is string && data.requesting_hospital_id.size() <= 128 &&
+        data.resource_name is string && data.resource_name.size() <= 120 &&
+        data.quantity_requested is number && data.quantity_requested > 0 &&
+        data.status in ['pending', 'authorized', 'completed', 'rejected'] &&
+        data.urgency in ['critical', 'normal', 'low'];
+    }
+
+    function isValidProfile(data) {
+      return data.keys().hasAll(['role', 'org_name']) &&
+        data.role in ['hospital', 'vendor'] &&
+        data.org_name is string && data.org_name.size() <= 120;
+    }
+
+    // Health / connection test rule
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Inventory items collection
+    match /inventory_items/{itemId} {
+      allow read: if true;
+      allow create: if isValidId(itemId) && isValidInventoryItem(incoming());
+      allow update: if isValidId(itemId) && isValidInventoryItem(incoming());
+      allow delete: if isValidId(itemId);
+    }
+
+    // Supply chain logistics orders
+    match /orders/{orderId} {
+      allow read: if true;
+      allow create: if isValidId(orderId) && isValidOrder(incoming());
+      allow update: if isValidId(orderId) && isValidOrder(incoming());
+      allow delete: if isValidId(orderId);
+    }
+
+    // Emergency cross-network transfer requests
+    match /transfer_requests/{requestId} {
+      allow read: if true;
+      allow create: if isValidId(requestId) && isValidTransferRequest(incoming());
+      allow update: if isValidId(requestId) && isValidTransferRequest(incoming());
+      allow delete: if isValidId(requestId);
+    }
+
+    // Facility and user profiles
+    match /profiles/{profileId} {
+      allow read: if true;
+      allow create, update: if isValidId(profileId) && isValidProfile(incoming());
+    }
+  }
+}
